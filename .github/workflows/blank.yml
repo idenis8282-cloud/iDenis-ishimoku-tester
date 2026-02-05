@@ -10,40 +10,49 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Получить код
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Распаковать проект
+      - name: Unzip project
         run: |
-          unzip IchimokuBacktester_Compose_MVP.zip
-          rm IchimokuBacktester_Compose_MVP.zip
-          echo "Содержимое после распаковки:"
-          ls -la
+          rm -rf work
+          mkdir -p work
+          unzip -q IchimokuBacktester_Compose_MVP.zip -d work
+          echo "Top level of work/:"
+          ls -la work
+          echo "Searching gradlew inside work/:"
+          find work -maxdepth 6 -type f -name gradlew -print || true
 
-      - name: Установить JDK 17
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: temurin
+          java-version: "17"
 
-      - name: Установить Android SDK
+      - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Найти gradlew и собрать APK
+      - name: Find gradlew and build APK
         run: |
           set -e
-          echo "Ищем gradlew..."
-          GRADLEW_PATH=$(find . -type f -name gradlew | head -n 1)
-          echo "Найден gradlew: $GRADLEW_PATH"
+          GRADLEW_PATH=$(find work -type f -name gradlew | head -n 1)
 
+          if [ -z "$GRADLEW_PATH" ]; then
+            echo "ERROR: gradlew not found inside ZIP contents."
+            echo "Showing first 300 files in work/:"
+            find work -type f | head -n 300
+            exit 1
+          fi
+
+          echo "Found gradlew: $GRADLEW_PATH"
           PROJECT_DIR=$(dirname "$GRADLEW_PATH")
+
           chmod +x "$GRADLEW_PATH"
           cd "$PROJECT_DIR"
-
           ./gradlew assembleDebug
 
-      - name: Загрузить APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug-apk
-          path: "**/app/build/outputs/apk/debug/*.apk"
+          path: "work/**/app/build/outputs/apk/debug/*.apk"
