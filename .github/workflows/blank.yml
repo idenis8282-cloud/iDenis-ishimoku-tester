@@ -17,6 +17,8 @@ jobs:
         run: |
           unzip IchimokuBacktester_Compose_MVP.zip
           rm IchimokuBacktester_Compose_MVP.zip
+          echo "Содержимое после распаковки:"
+          ls -la
 
       - name: Установить JDK 17
         uses: actions/setup-java@v4
@@ -27,16 +29,21 @@ jobs:
       - name: Установить Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Разрешить запуск gradlew
-        run: chmod +x IchimokuBacktester/gradlew
-
-      - name: Собрать Debug APK
+      - name: Найти gradlew и собрать APK
         run: |
-          cd IchimokuBacktester
+          set -e
+          echo "Ищем gradlew..."
+          GRADLEW_PATH=$(find . -type f -name gradlew | head -n 1)
+          echo "Найден gradlew: $GRADLEW_PATH"
+
+          PROJECT_DIR=$(dirname "$GRADLEW_PATH")
+          chmod +x "$GRADLEW_PATH"
+          cd "$PROJECT_DIR"
+
           ./gradlew assembleDebug
 
       - name: Загрузить APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug-apk
-          path: IchimokuBacktester/app/build/outputs/apk/debug/*.apk
+          path: "**/app/build/outputs/apk/debug/*.apk"
