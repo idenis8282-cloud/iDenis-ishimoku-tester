@@ -10,32 +10,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Получить код
         uses: actions/checkout@v4
 
-      - name: Unzip project
+      - name: Распаковать проект
         run: |
           unzip IchimokuBacktester_Compose_MVP.zip
           rm IchimokuBacktester_Compose_MVP.zip
 
-      - name: Set up JDK
+      - name: Установить JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Set up Android SDK
+      - name: Установить Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Grant execute permission for gradlew
+      - name: Разрешить запуск gradlew
         run: chmod +x IchimokuBacktester/gradlew
 
-      - name: Build Debug APK
+      - name: Собрать Debug APK
         run: |
           cd IchimokuBacktester
           ./gradlew assembleDebug
 
-      - name: Upload APK
+      - name: Загрузить APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug-apk
