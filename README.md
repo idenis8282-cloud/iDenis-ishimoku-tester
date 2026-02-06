@@ -1,3 +1,3 @@
 # Ichimoku Backtester (Android)
 
-Fixed theme (Material3). Compose MVP for Binance Futures klines + basic backtest.
+ZIP build for GitHub Actions (no wrapper). Uses platform theme to avoid AAPT theme issues.
